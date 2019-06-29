@@ -1,0 +1,162 @@
+app.get('/data' , (req , res , next) =>{
+    pool.getConnection((err , connection) =>{
+        if(err){
+            console.log("err @ getConnection");
+            connection.release()
+        }
+        connection.query(`SELECT * FROM room_available` , (err , rows , field) =>{
+            // let date = rows[0].date.toString();
+            if(err){
+                console.log("err @ getConnection");
+                connection.release()
+            }
+            rows.forEach(row => {
+                if(row.total_room === row.rooms_booked){
+                console.log("Fully Booked")
+                let date = new Date(row.date.toString());
+                date = date.getMonth()+'/'+date.getDate()+'/'+date.getFullYear();
+                nospaceDates[date] = date ;
+                }
+                else if(row.rooms_booked == 0 ){
+                    let date = new Date(row.date.toString());
+                    date = date.getMonth()+'/'+date.getDate()+'/'+date.getFullYear();
+                    availableDates[date] = date
+                }
+                else if(row.rooms_booked > 0 && row.rooms_booked < row.total_room) {
+                    let date = new Date(row.date.toString());
+                    date = date.getMonth()+'/'+date.getDate()+'/'+date.getFullYear();
+                    pendingDates[date] = date ;
+                    pendingDates[date].booked = row.rooms_booked ;
+                }
+                console.log({availableDates , pendingDates , nospaceDates})
+                res.json({
+                availableDates: availableDates , pendingDates : pendingDates , nospaceDates :nospaceDates
+
+                })
+            });
+            
+            let DATES = []
+            // date = new Date(date)
+            // date = date.getMonth()+'/'+date.getDate()+'/'+date.getFullYear();
+            // rows.forEach(row => {
+            //     let DATE = {};
+            //     let date = new Date(row.date.toString());
+            //     date = date.getMonth()+'/'+date.getDate()+'/'+date.getFullYear()
+            //     DATE[date] = {}
+            //     DATE[date].totalRoom = row.total_room ;
+            //     DATE[date].rooms_booked = row.rooms_booked ;
+            //     DATES[DATES.length] = Date
+            //     console.log(Date)
+            // });
+            
+
+            // res.send(rows)
+            
+        })
+    })
+
+})
+
+  // date = new Date(date)
+            // date = date.getMonth()+'/'+date.getDate()+'/'+date.getFullYear();
+            // rows.forEach(row => {
+            //     let DATE = {};
+            //     let date = new Date(row.date.toString());
+            //     date = date.getMonth()+'/'+date.getDate()+'/'+date.getFullYear()
+            //     DATE[date] = {}
+            //     DATE[date].totalRoom = row.total_room ;
+            //     DATE[date].rooms_booked = row.rooms_booked ;
+            //     DATES[DATES.length] = Date
+            //     console.log(Date)
+            // });
+            
+
+            // res.send(rows)
+
+
+
+app.get('/date' , (req , res , next) =>{ 
+    let date =  new Date(req.query.date)
+    
+    
+    // if(availableDates[date]){
+    //     res.send("All Rooms are available on "+req.query.date)
+    // }
+    // else if(pendingDates[date]) {
+    //     const pendingRooms = totalRoom - pendingDates[date].availableRooms
+    //     res.send("No of booked rooms are "+pendingRooms+"  And confirmed rooms are "+pendingDates[date].availableRooms)
+    // }
+    // else if(nospaceDates[date]) {
+    //     res.send("Sorry Sir we Are completly booked for this Date")
+    // }
+    
+})
+
+
+
+
+// const Datas = await axios({
+//   url: 'http://localhost:3000/data',
+//   method: 'get'
+// })
+
+// //Dummy Data
+// const availableDates = {};
+// // availableDates[ new Date( '07/04/2019' )] = new Date( '07/04/2019' );
+// // availableDates[ new Date( '07/06/2019' )] = new Date( '07/06/2019' );
+// // availableDates[ new Date( '07/20/2019' )] = new Date( '07/20/2019' );
+// // availableDates[ new Date( '07/25/2019' )] = new Date( '07/25/2019' );
+// console.log(availableDates)
+// const pendingDates = {};
+// // pendingDates[ new Date( '07/09/2019' )] = new Date( '07/09/2019' );
+// // pendingDates[ new Date( '07/10/2019' )] = new Date( '07/10/2019' );
+// // pendingDates[ new Date( '07/11/2019' )] = new Date( '07/11/2019' );
+// // pendingDates[ new Date( '07/13/2019' )] = new Date( '07/13/2019' );
+
+// const nospaceDates = {}
+// // nospaceDates[ new Date( '07/12/2019' )] = new Date( '07/12/2019' );
+// // nospaceDates[ new Date( '07/28/2019' )] = new Date( '07/28/2019' );
+// console.log("Inside script.js")
+
+// Object.keys(Datas.data.availableDates).forEach(date=>{
+//   availableDates[ new Date(date)] = new Date(date)
+// })
+// Object.keys(Datas.data.pendingDates).forEach(date=>{
+//   pendingDates[ new Date(date)] = new Date(date)
+// })
+// Object.keys(Datas.data.nospaceDates).forEach(date=>{
+//   nospaceDates[ new Date(date)] = new Date(date)
+// })
+// console.table({availableDates , pendingDates , nospaceDates})
+
+// //DatePicker Component
+// $('#datepicker').datepicker({
+//     minDate: 0,
+//     beforeShowDay: function( date ) {  
+//         if( availableDates[date] ){   
+//           return [true, "available", 'Tooltip text'];
+//         } if( pendingDates[date] ) {   
+//           return [true, "pending", 'Tooltip text'];
+//         }if(nospaceDates[date]){
+//           return [true, "Notavailable", 'Tooltip text']
+//         }else {
+//           return [true, "", 'Tooltip text'];
+//         }
+//     },
+//     onSelect: (x  , y )=>{
+//       console.log(x)
+//       //   let date = new Date(x)
+//       //   console.log(date)
+//       //   date = date.toString().split(" ");
+//       //   let month = date[1];
+//       //   let monthNo = date[2]
+//       // console.log()
+//       // console.log(y);
+//       console.log("event");
+//       this.event.target.href="https://stackoverflow.com/questions/492994/compare-two-dates-with-javascript"
+//       console.log(this.event.target.href)
+
+//       window.open(`/date?date=${x}`)
+
+//     }
+// });

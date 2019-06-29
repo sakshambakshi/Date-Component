@@ -1,0 +1,108 @@
+const users = [
+    { id: 1 , name: "Alex" , email: "alex@gmail.com" , password: "secret"},
+    { id: 2 , name: "Sam" , email: "sam@gmail.com" , password: "12"},
+    { id: 3 , name: "David" , email: "david@gmail.com" , password: "secret2"}
+]
+
+const manager = [
+    { id: 1 , name: "Alex" , email: "alex@gmail.com" , password: "secret"},
+    { id: 2 , name: "Sam" , email: "sam@gmail.com" , password: "secret1"},
+]
+
+
+(req , res , next) =>{
+    console.log("Inside")
+    pool.getConnection((err , connection) =>{
+        if(err){
+            console.log("err @ getConnection");
+            connection.release()
+        }
+        connection.query(`SELECT * FROM room_available` , (err , rows , field) =>{
+            // let date = rows[0].date.toString();
+            if(err){
+                console.log("err @ getConnection");
+                connection.release()
+            }
+            rows.forEach(row => {
+
+                if(row.total_room === row.rooms_booked){
+                console.log("Fully Booked")
+                let date = new Date(row.date.toString());
+                date = date.getMonth()+1+'/'+date.getDate()+'/'+date.getFullYear();
+                nospaceDates[date] = date ;
+                }
+                else if(row.rooms_booked == 0 ){
+                    let date = new Date(row.date.toString());
+                    date = date.getMonth()+1+'/'+date.getDate()+'/'+date.getFullYear();
+                    availableDates[date] = date
+                }
+                else if(row.rooms_booked > 0 && row.rooms_booked < row.total_room) {
+                    let date = new Date(row.date.toString());
+                    date = date.getMonth()+1+'/'+date.getDate()+'/'+date.getFullYear();
+                    pendingDates[date] = date ;
+                    pendingDates[date].booked = row.rooms_booked ;
+                }
+                console.log({availableDates , pendingDates , nospaceDates})   
+            });
+            connection.release()
+            res.send({
+                availableDates: availableDates , pendingDates : pendingDates , nospaceDates :nospaceDates
+                })
+            
+                    
+        })
+    })
+
+}
+
+
+
+
+// app.post('/auth' ,(req, res) =>{
+//     const {username} = req.body ;
+//     const {password} = req.body ;
+//     const {type} = req.body ; 
+//     if(username && password && type){
+//         // if(type == 'user'){
+//         //     users.forEach(user =>{
+//         //         if(user.email == username){
+//         //            if(user.password == password){
+//         //                req.session.userId = user.id ; 
+//         //                req.session.userType = type;
+//         //             //    res.send(req.session)
+//         //                res.redirect('/calender')
+//         //            }
+//         //         }
+
+//         //     })
+//         // }
+//         // else if(type == 'admin'){
+//         //     manager.forEach(user =>{
+//         //         if(user.email == username){
+//         //            if(user.password == password){
+//         //                req.session.userId = user.id ; 
+//         //                req.session.userType = type;
+//         //             //    res.send(req.session)
+//         //                res.redirect('/calender')
+//         //            }
+//         //         }
+
+//         //     })
+//         //     res.send(`${}`)
+//         // }
+//     }
+// })
+
+
+SELECT room_id FROM room_details WHERE room_id NOT IN (SELECT room_id FROM room_details WHERE Check_in_date>='2019-07-01' AND Check_out_date<='2019-07-04')
+
+
+
+SELECT room_id FROM room_details WHERE room_id NOT IN (SELECT room_id from room_details where
+(Check_in_date BETWEEN '2019-07-01'AND '2019-07-04') OR 
+(Check_out_date BETWEEN '2019-07-01' AND '2019-07-04') OR 
+(Check_in_date <= '2019-07-01' AND Check_out_date >= '2019-07-04'))
+
+
+
+                            
